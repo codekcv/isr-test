@@ -1,9 +1,16 @@
-import Head from 'next/head'
-import styles from '../styles/Home.module.css'
+import Head from "next/head";
+import styles from "../styles/Home.module.css";
+import request from "graphql-request";
 
-export default function Home() {
+export default function Home({ featured }) {
+  console.log("featured:", featured);
+  const { posts } = featured;
+
   return (
     <div className={styles.container}>
+      {posts.map((post) => (
+        <pre style={{ width: "100%" }}>{JSON.stringify(post)}</pre>
+      ))}
       <Head>
         <title>Create Next App</title>
         <link rel="icon" href="/favicon.ico" />
@@ -15,7 +22,7 @@ export default function Home() {
         </h1>
 
         <p className={styles.description}>
-          Get started by editing{' '}
+          Get started by editing{" "}
           <code className={styles.code}>pages/index.js</code>
         </p>
 
@@ -56,10 +63,57 @@ export default function Home() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Powered by{' '}
+          Powered by{" "}
           <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
         </a>
       </footer>
     </div>
-  )
+  );
+}
+
+export async function getStaticProps() {
+  const featured = await request(
+    `${process.env.STRAPI_API_URL}/graphql`,
+    /* GraphQL */ `
+      {
+        posts(
+          where: { homepage_featured: true }
+          sort: "published_at:desc"
+          limit: 5
+        ) {
+          id
+          title
+          description
+          content
+          slug
+          category {
+            main_category {
+              name
+            }
+          }
+          type
+          author {
+            id
+            name
+          }
+          homepage_featured
+          view_count
+          tagline
+          media {
+            formats
+          }
+          hashtags {
+            id
+            name
+            posts {
+              id
+              title
+            }
+          }
+        }
+      }
+    `
+  );
+
+  return { props: { featured }, revalidate: 1 };
 }
