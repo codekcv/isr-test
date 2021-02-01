@@ -32,7 +32,9 @@ export default function Home(props) {
   return (
     <div className={styles.container}>
       {posts.map((post) => (
-        <pre style={{ width: "100%" }}>{JSON.stringify(post)}</pre>
+        <pre key={post.id} style={{ width: "100%" }}>
+          {JSON.stringify(post)}
+        </pre>
       ))}
     </div>
   );
